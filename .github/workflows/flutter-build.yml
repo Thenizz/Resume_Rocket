@@ -11,12 +11,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Find Flutter project root (directory containing pubspec.yaml)
+      - name: Find Flutter project directory
+        id: flutter-dir
+        run: |
+          FLUTTER_DIR=$(find . -name "pubspec.yaml" -exec dirname {} \; | head -n 1)
+          echo "FLUTTER_DIR=$FLUTTER_DIR" >> $GITHUB_ENV
+
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.2' # Stable version
+          flutter-version: '3.22.2'
+
       - run: flutter pub get
+        working-directory: ${{ env.FLUTTER_DIR }}
+
       - run: flutter build apk --release
+        working-directory: ${{ env.FLUTTER_DIR }}
+
       - uses: actions/upload-artifact@v4
         with:
           name: app-release.apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: ${{ env.FLUTTER_DIR }}/build/app/outputs/flutter-apk/app-release.apk
